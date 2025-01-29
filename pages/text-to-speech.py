@@ -1,29 +1,39 @@
 import streamlit as st
 import pyttsx3
-import os
 
-# Ensure the assets directory exists
-os.makedirs("assets", exist_ok=True)
+st.set_page_config(page_title="Text-to-Speech", layout="centered")
+
+# Custom CSS
+st.markdown("""
+    <style>
+        .stTextArea, .stSlider, .stButton, .stSelectbox {
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .stButton button {
+            background-color: #ff7f50;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 st.title("🗣️ Text-to-Speech Converter")
 
-text = st.text_area("Enter your text:", "")
-voice_rate = st.slider("Select Speech Rate:", 50, 200, 150)
-filename = st.text_input("Enter filename (without extension):", "output")
+# Text input area
+text = st.text_area("Enter text:", height=200, placeholder="Type something here...")
 
-engine = pyttsx3.init()
-voices = engine.getProperty('voices')
-selected_voice = st.selectbox("Choose Voice:", [voice.name for voice in voices])
+if text:
+    voice_rate = st.slider("Select Speech Rate:", 50, 200, 150)
+    engine = pyttsx3.init()
+    voices = engine.getProperty('voices')
+    selected_voice = st.selectbox("Choose Voice:", [voice.name for voice in voices])
 
-if st.button("Convert to Speech"):
-    if text.strip() == "":
-        st.warning("Please enter some text.")
-    else:
+    if st.button("Convert to Speech 🎧"):
         engine.setProperty('voice', voices[[v.name for v in voices].index(selected_voice)].id)
         engine.setProperty('rate', voice_rate)
-        audio_file = f"assets/{filename}.mp3"
-        engine.save_to_file(text, audio_file)
+        engine.say(text)
         engine.runAndWait()
-        st.success("Conversion successful! You can now play and download the audio below.")
-        st.audio(audio_file, format="audio/mp3")
-        st.download_button("Download Audio", audio_file, file_name=f"{filename}.mp3")
+        st.success("Speech generated successfully!")
